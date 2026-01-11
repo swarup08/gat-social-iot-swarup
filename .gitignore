@@ -1,0 +1,4 @@
+# Ignore datasets and large files
+data/
+__pycache__/
+*.pyc
