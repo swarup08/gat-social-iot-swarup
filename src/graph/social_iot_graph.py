@@ -43,6 +43,11 @@ class SocialIoTGraph:
                         "latency": random.uniform(1, 100)      # ms
                     }
                     self.graph.add_edge(u, v, **e_uv)
+    
+    def add_degree_features(self):
+        for node in self.graph.nodes:
+            deg = self.graph.degree(node)
+            self.graph.nodes[node]["degree"] = deg
 
     def summary(self):
         print("Number of nodes:", self.graph.number_of_nodes())
@@ -57,6 +62,17 @@ class SocialIoTGraph:
         for k, v in device_count.items():
             print(f"  {k}: {v}")
 
+    def plot_degree_distribution(self):
+        degrees = [self.graph.degree(n) for n in self.graph.nodes]
+
+        plt.figure(figsize=(6, 4))
+        plt.hist(degrees, bins=10, edgecolor='black')
+        plt.xlabel("Node Degree")
+        plt.ylabel("Number of Nodes")
+        plt.title("Degree Distribution of Social IoT Graph")
+        plt.grid(True)
+        plt.show()
+
     def visualize(self):
         plt.figure(figsize=(8, 6))
         pos = nx.spring_layout(self.graph, seed=42)
@@ -64,10 +80,33 @@ class SocialIoTGraph:
         plt.title("Synthetic Social IoT Graph")
         plt.show()
 
+    def basic_graph_statistics(self):
+        num_nodes = self.graph.number_of_nodes()
+        num_edges = self.graph.number_of_edges()
+
+        degrees = [self.graph.degree(n) for n in self.graph.nodes]
+        avg_degree = sum(degrees) / num_nodes
+        max_degree = max(degrees)
+        min_degree = min(degrees)
+
+        density = nx.density(self.graph)
+
+        print("\nBasic Graph Statistics:")
+        print(f"Average Degree: {avg_degree:.2f}")
+        print(f"Maximum Degree: {max_degree}")
+        print(f"Minimum Degree: {min_degree}")
+        print(f"Graph Density: {density:.4f}")
+
 
 if __name__ == "__main__":
     graph_generator = SocialIoTGraph(num_nodes=40)
     graph_generator.generate_nodes()
     graph_generator.generate_edges(p=0.08)
+    graph_generator.add_degree_features()
     graph_generator.summary()
+    graph_generator.basic_graph_statistics()   # NEW
     graph_generator.visualize()
+    graph_generator.plot_degree_distribution()
+
+
+

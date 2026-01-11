@@ -160,7 +160,7 @@ Milestone-1 Status
 
 --------------------------------------------------
 
-Milestone-1 (Weeks 1–2) is fully completed and polished. It includes:
+Milestone-1 (Weeks 1–2) is fully completed. It includes:
 
 
 
@@ -177,16 +177,6 @@ Milestone-1 (Weeks 1–2) is fully completed and polished. It includes:
 \- Botnet propagation simulator with infection curve visualization  
 
 \- Successful verification of GAT using a Toy GAT model  
-
-
-
-This milestone establishes a strong and reproducible foundation for further work on:
-
-\- GAT-based edge importance learning  
-
-\- RL-based adaptive edge pruning  
-
-\- Explainable AI integration for security decisions  
 
 
 
