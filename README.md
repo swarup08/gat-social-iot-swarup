@@ -113,3 +113,40 @@ Milestone-1 (Weeks 1–2) is fully completed. It includes:
 
 This milestone establishes a complete and reproducible baseline system for developing
 GAT-based, RL-driven, and explainable security mechanisms in Social IoT networks.
+
+--------------------------------------------------
+Milestone-2: GAT Training, Edge Importance & Static Pruning
+--------------------------------------------------
+
+In Milestone-2, we implemented and evaluated a Graph Attention Network (GAT) on the synthetic Social IoT graph to learn edge importance and study the impact of static edge pruning on botnet propagation.
+
+Completed tasks:
+
+- Defined a supervised node classification task on the Social IoT graph (benign vs vulnerable nodes).
+- Implemented a baseline GAT architecture with multi-head attention.
+- Trained the GAT model and logged training, validation, and test accuracy across epochs.
+- Extracted attention-based edge importance scores for all edges.
+- Implemented static pruning strategies (threshold-based pruning).
+- Evaluated botnet propagation on:
+  - Original graph
+  - Pruned graph
+- Compared infection curves to analyze the security–utility trade-off.
+
+Key Observations:
+
+- Pruned graphs show a slower botnet infection spread compared to the original graph.
+- Attention-guided pruning reduces attack pathways while preserving core connectivity.
+- This validates the feasibility of using GAT attention scores for security-aware edge pruning in Social IoT networks.
+
+How to Run Milestone-2 Experiments:
+
+1. Train GAT on Social IoT Graph:
+   python -m src.models.gat_social_iot
+
+2. Run Static Pruning Experiment:
+   python -m src.models.static_pruning_experiment
+
+Expected Output:
+- Training logs showing loss and accuracy
+- Edge importance statistics
+- Botnet spread comparison plot (Original vs Pruned graph)
