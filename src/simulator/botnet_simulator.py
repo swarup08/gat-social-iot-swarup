@@ -59,7 +59,6 @@ class BotnetSimulator:
         plt.grid(True)
         plt.show()
 
-
 # -----------------------------
 # Testing the simulator
 # -----------------------------
@@ -83,3 +82,10 @@ if __name__ == "__main__":
 
     # Plot results
     simulator.plot()
+
+def run_botnet_simulation(G, steps=20, infection_prob=0.25, recovery_prob=0.02, num_seeds=3):
+        """Wrapper for BotnetSimulator to return infection curve for experiments. """
+        simulator = BotnetSimulator(G, infection_prob=infection_prob, recovery_prob=recovery_prob)
+        simulator.initialize_infection(num_seeds=num_seeds)
+        simulator.run(steps=steps)
+        return simulator.infection_history
