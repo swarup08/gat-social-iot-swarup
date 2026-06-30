@@ -120,11 +120,6 @@ def main():
         val_acc = evaluate(model, data, data.val_mask)
         test_acc = evaluate(model, data, data.test_mask)
 
-        loss = train(model, data, optimizer)
-        train_acc = evaluate(model, data, data.train_mask)
-        val_acc = evaluate(model, data, data.val_mask)
-        test_acc = evaluate(model, data, data.test_mask)
-
         # Save best model
         if val_acc > best_val_acc:
             best_val_acc = val_acc
