@@ -3,6 +3,13 @@ import numpy as np
 import random
 import matplotlib.pyplot as plt
 
+# ======================================================
+# Global Random Seed (Reproducible Experiments)
+# ======================================================
+SEED = 42
+
+random.seed(SEED)
+np.random.seed(SEED)
 
 class SocialIoTGraph:
     """
@@ -12,6 +19,8 @@ class SocialIoTGraph:
     """
 
     def __init__(self, num_nodes=50):
+        random.seed(SEED)
+        np.random.seed(SEED)
         self.num_nodes = num_nodes
         self.graph = nx.DiGraph()
 

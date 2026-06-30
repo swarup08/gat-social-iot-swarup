@@ -2,6 +2,16 @@ import torch
 from torch_geometric.data import Data
 from src.graph.social_iot_graph import SocialIoTGraph
 
+import random
+import numpy as np
+import torch
+
+SEED = 42
+
+random.seed(SEED)
+np.random.seed(SEED)
+torch.manual_seed(SEED)
+
 def generate_node_labels(G):
     degrees = [G.degree(n) for n in G.nodes()]
     median_degree = sorted(degrees)[len(degrees)//2]

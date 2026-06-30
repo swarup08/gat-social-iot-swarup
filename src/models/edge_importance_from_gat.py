@@ -26,6 +26,64 @@ class GATWithAttention(torch.nn.Module):
             return x, (edge_index1, attn1), (edge_index2, attn2)
         return x
 
+
+def compute_edge_importance():
+    """
+    Compute attention-based edge importance scores.
+
+    Returns
+    -------
+    edge_index : Tensor
+    s_uv : Tensor
+    """
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    from src.utils.data_loader import load_social_iot_dataset
+
+    data = load_social_iot_dataset().to(device)
+
+    model = GATWithAttention(
+        in_channels=data.x.size(1),
+        hidden_channels=16,
+        out_channels=2,
+        heads=8,
+        dropout=0.3
+    ).to(device)
+
+    model.load_state_dict(
+        torch.load(
+            "results/models/best_gat_social_iot.pth",
+            map_location=device,
+            weights_only=False
+        )
+    )
+
+    model.eval()
+
+    with torch.no_grad():
+
+        out, (ei1, attn1), (ei2, attn2) = model(
+            data.x,
+            data.edge_index,
+            return_attention=True
+        )
+
+        attn1_mean = attn1.mean(dim=1)
+        attn2_mean = attn2.squeeze()
+
+        # Final attention score
+        s_uv = 0.5 * attn1_mean + 0.5 * attn2_mean
+
+        # ---------------------------------------------------
+        # Remove self-loops added automatically by GATConv
+        # ---------------------------------------------------
+        num_original_edges = data.edge_index.shape[1]
+
+        ei1 = ei1[:, :num_original_edges]
+        s_uv = s_uv[:num_original_edges]
+
+        return ei1.cpu(), s_uv.cpu()
 # ---------------------------
 # Main
 # ---------------------------
@@ -41,9 +99,20 @@ def main():
         heads=8,
         dropout=0.3
     ).to(device)
+# ---------------------------------------------------
+# Load trained GAT model
+# ---------------------------------------------------
+    model.load_state_dict(
+        torch.load(
+            "results/models/best_gat_social_iot.pth",
+            map_location=device,
+            weights_only=False
+        )
+    )
 
-    # Load trained weights (optional – for now, random init is okay for demonstration)
     model.eval()
+
+    print("Trained GAT model loaded successfully.")
 
     with torch.no_grad():
         out, (ei1, attn1), (ei2, attn2) = model(data.x, data.edge_index, return_attention=True)
@@ -58,6 +127,14 @@ def main():
 
     # Final importance score (simple average of layers)
     s_uv = 0.5 * attn1_mean + 0.5 * attn2_mean
+
+    # ---------------------------------------------------
+# Keep only original edges (ignore added self-loops)
+# ---------------------------------------------------
+    num_original_edges = data.edge_index.shape[1]
+
+    ei1 = ei1[:, :num_original_edges]
+    s_uv = s_uv[:num_original_edges]
 
     print("Edge importance computed.")
     print("Top-10 most important edges (index, score):")

@@ -1,12 +1,30 @@
 import torch
 import torch.nn.functional as F
+
+import os
+import random
+import numpy as np
+
+
 from torch_geometric.nn import GATConv
 from torch_geometric.data import Data
 from sklearn.model_selection import train_test_split
 
 # Import your PyG conversion
-from src.models.social_iot_to_pyg import convert_social_iot_to_pyg
+#from src.models.social_iot_to_pyg import convert_social_iot_to_pyg
+from src.utils.data_loader import load_social_iot_dataset
 
+# =====================================================
+# Reproducibility
+# =====================================================
+SEED = 42
+
+random.seed(SEED)
+np.random.seed(SEED)
+torch.manual_seed(SEED)
+
+if torch.cuda.is_available():
+    torch.cuda.manual_seed(SEED)
 # ---------------------------
 # GAT Model
 # ---------------------------
@@ -50,9 +68,11 @@ def evaluate(model, data, mask):
 # Main
 # ---------------------------
 def main():
+    os.makedirs("results/models", exist_ok=True)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    data = convert_social_iot_to_pyg()
+    #clsdata = convert_social_iot_to_pyg()
+    data = load_social_iot_dataset()
     data = data.to(device)
 
     # Create train/val/test masks
@@ -88,17 +108,50 @@ def main():
     #optimizer = torch.optim.Adam(model.parameters(), lr=0.005, weight_decay=5e-4)
     optimizer = torch.optim.Adam(model.parameters(), lr=0.002, weight_decay=5e-4)
     print("Starting GAT training on Social IoT graph...")
+
+    best_val_acc = 0.0
+    best_test_acc = 0.0
+    best_epoch = 0
+
     for epoch in range(1, 201):
+
         loss = train(model, data, optimizer)
         train_acc = evaluate(model, data, data.train_mask)
         val_acc = evaluate(model, data, data.val_mask)
         test_acc = evaluate(model, data, data.test_mask)
+
+        loss = train(model, data, optimizer)
+        train_acc = evaluate(model, data, data.train_mask)
+        val_acc = evaluate(model, data, data.val_mask)
+        test_acc = evaluate(model, data, data.test_mask)
+
+        # Save best model
+        if val_acc > best_val_acc:
+            best_val_acc = val_acc
+            best_test_acc = test_acc
+            best_epoch = epoch
+
+            torch.save(
+                model.state_dict(),
+                "results/models/best_gat_social_iot.pth"
+            )
 
         if epoch % 10 == 0:
             print(f"Epoch {epoch:03d} | Loss: {loss:.4f} | "
                   f"Train Acc: {train_acc:.3f} | Val Acc: {val_acc:.3f} | Test Acc: {test_acc:.3f}")
 
     print("GAT training completed.")
+
+    print("\n====================================")
+    print("Training Summary")
+    print("====================================")
+
+    print(f"Best Epoch           : {best_epoch}")
+    print(f"Best Validation Acc  : {best_val_acc:.3f}")
+    print(f"Test Accuracy        : {best_test_acc:.3f}")
+
+    print("\nBest model saved at:")
+    print("results/models/best_gat_social_iot.pth")
 
 if __name__ == "__main__":
     main()
