@@ -180,15 +180,21 @@ class DQNAgent:
         )
 
         self.update_target()
-    def predict_action(self, state):
+    def predict_action(self, state, valid_actions):
         """
-        Select the best action without exploration.
+        Select the best valid action without exploration.
         Used during evaluation.
         """
 
         state = torch.FloatTensor(state).unsqueeze(0).to(self.device)
 
         with torch.no_grad():
-            q_values = self.model(state)
+            q_values = self.model(state).cpu().numpy().flatten()
 
-        return int(torch.argmax(q_values).item())
+        # Only consider valid actions
+        best_action = max(
+            valid_actions,
+            key=lambda action: q_values[action]
+        )
+
+        return best_action

@@ -127,7 +127,6 @@ class GraphPruningEnv:
         )
 
         return state
-
     def step(self, action):
         """
         Execute one pruning action.
@@ -149,12 +148,45 @@ class GraphPruningEnv:
         # -------------------------
         if not self.graph.has_edge(u, v):
 
+            connectivity_ratio = (
+                self.graph.number_of_edges()
+                /
+                self.original_graph.number_of_edges()
+            )
+
+            infection_ratio = (
+                self.infection_history[-1]
+                /
+                self.graph.number_of_nodes()
+                if len(self.infection_history) > 0
+                else 0.0
+            )
+
+            removed_edges = (
+                self.original_graph.number_of_edges()
+                - self.graph.number_of_edges()
+            )
+
+            pruning_cost = (
+                removed_edges
+                /
+                self.original_graph.number_of_edges()
+            )
+
+            # IMPORTANT: Even duplicate actions count as one RL step
+            self.current_step += 1
+
+            done = self.current_step >= self.max_steps
+
             info = {
                 "selected_edge": (u, v),
-                "message": "Edge already removed."
+                "message": "Edge already removed.",
+                "infection_ratio": infection_ratio,
+                "connectivity_ratio": connectivity_ratio,
+                "pruning_cost": pruning_cost,
             }
 
-            return self.get_state(), -1.0, False, info
+            return self.get_state(), -1.0, done, info
 
         # -------------------------
         # Remove Edge
@@ -167,7 +199,7 @@ class GraphPruningEnv:
         infection_history = run_botnet_simulation(
             self.graph,
             infection_prob=self.infection_prob,
-            recovery_prob=self.recovery_prob
+            recovery_prob=self.recovery_prob,
         )
 
         self.infection_history = infection_history
@@ -175,7 +207,11 @@ class GraphPruningEnv:
         # -------------------------
         # Compute Metrics
         # -------------------------
-        infection_ratio = infection_history[-1] / self.graph.number_of_nodes()
+        infection_ratio = (
+            infection_history[-1]
+            /
+            self.graph.number_of_nodes()
+        )
 
         connectivity_ratio = (
             self.graph.number_of_edges()
@@ -204,7 +240,7 @@ class GraphPruningEnv:
         )
 
         # -------------------------
-        # Update Step
+        # Update Step Counter
         # -------------------------
         self.current_step += 1
 
@@ -216,10 +252,28 @@ class GraphPruningEnv:
             "selected_edge": (u, v),
             "infection_ratio": infection_ratio,
             "connectivity_ratio": connectivity_ratio,
-            "pruning_cost": pruning_cost
+            "pruning_cost": pruning_cost,
         }
 
         return next_state, reward, done, info
+    def get_valid_actions(self):
+        """
+        Return indices of edges that are still present in the graph.
+        """
+
+        valid_actions = []
+
+        for action in range(self.edge_index.shape[1]):
+
+            edge = self.edge_index[:, action]
+
+            u = int(edge[0])
+            v = int(edge[1])
+
+            if self.graph.has_edge(u, v):
+                valid_actions.append(action)
+
+        return valid_actions
     def render(self):
             """
             Display the current environment status.
