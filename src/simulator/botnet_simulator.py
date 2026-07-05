@@ -1,7 +1,5 @@
 import random
 import matplotlib.pyplot as plt
-import networkx as nx
-from collections import defaultdict
 
 
 class BotnetSimulator:
@@ -17,27 +15,53 @@ class BotnetSimulator:
         # Infection state: 0 = clean, 1 = infected
         self.state = {node: 0 for node in self.graph.nodes}
 
-        # History
+        # Infection history
         self.infection_history = []
 
-    def initialize_infection(self, num_seeds=3):
+    def initialize_infection(self, num_seeds=3, verbose=False):
+        """
+        Initialize infection with randomly selected seed nodes.
+
+        Parameters
+        ----------
+        num_seeds : int
+            Number of initially infected nodes.
+
+        verbose : bool
+            Print infected seed nodes if True.
+        """
+
+        # Reset all nodes to clean before each simulation
+        self.state = {node: 0 for node in self.graph.nodes}
+
         seeds = random.sample(list(self.graph.nodes), num_seeds)
+
         for s in seeds:
             self.state[s] = 1
-        print(f"Initial infected nodes: {seeds}")
+
+        if verbose:
+            print(f"Initial infected nodes: {seeds}")
 
     def step(self):
+        """
+        Perform one infection propagation step.
+        """
+
         new_state = self.state.copy()
 
         for u in self.graph.nodes:
+
             if self.state[u] == 1:
+
                 # Try to infect neighbors
                 for v in self.graph.successors(u):
+
                     if self.state[v] == 0:
+
                         if random.random() < self.infection_prob:
                             new_state[v] = 1
 
-                # Possible recovery
+                # Recovery
                 if random.random() < self.recovery_prob:
                     new_state[u] = 0
 
@@ -45,7 +69,7 @@ class BotnetSimulator:
 
     def run(self, steps=20, verbose=False):
         """
-        Run botnet propagation simulation.
+        Run the botnet propagation simulation.
 
         Parameters
         ----------
@@ -70,44 +94,82 @@ class BotnetSimulator:
             self.step()
 
     def plot(self):
+        """
+        Plot infection curve.
+        """
+
         plt.figure(figsize=(7, 5))
-        plt.plot(self.infection_history, marker='o')
-        plt.xlabel("Time step")
-        plt.ylabel("Number of infected nodes")
+        plt.plot(self.infection_history, marker="o")
+        plt.xlabel("Time Step")
+        plt.ylabel("Number of Infected Nodes")
         plt.title("Botnet Propagation in Social IoT Graph")
         plt.grid(True)
         plt.show()
 
-# -----------------------------
-# Testing the simulator
-# -----------------------------
+
+# ----------------------------------------------------
+# Wrapper Function (Used by RL Environment)
+# ----------------------------------------------------
+def run_botnet_simulation(
+    G,
+    steps=20,
+    infection_prob=0.25,
+    recovery_prob=0.02,
+    num_seeds=3,
+):
+    """
+    Wrapper used by RL environment.
+    Returns only infection history.
+    """
+
+    simulator = BotnetSimulator(
+        G,
+        infection_prob=infection_prob,
+        recovery_prob=recovery_prob,
+    )
+
+    simulator.initialize_infection(
+        num_seeds=num_seeds,
+        verbose=False,
+    )
+
+    simulator.run(
+        steps=steps,
+        verbose=False,
+    )
+
+    return simulator.infection_history
+
+
+# ----------------------------------------------------
+# Manual Testing
+# ----------------------------------------------------
 if __name__ == "__main__":
+
     from src.graph.social_iot_graph import SocialIoTGraph
 
-    # Generate Social IoT Graph
     graph_generator = SocialIoTGraph(num_nodes=40)
+
     graph_generator.generate_nodes()
+
     graph_generator.generate_edges(p=0.08)
+
     G = graph_generator.graph
 
-    # Create simulator
-    simulator = BotnetSimulator(G, infection_prob=0.25, recovery_prob=0.02)
+    simulator = BotnetSimulator(
+        G,
+        infection_prob=0.25,
+        recovery_prob=0.02,
+    )
 
-    # Initialize infection
-    simulator.initialize_infection(num_seeds=3)
+    simulator.initialize_infection(
+        num_seeds=3,
+        verbose=True,
+    )
 
-    # Run simulation
-    simulator.run(steps=25)
+    simulator.run(
+        steps=25,
+        verbose=True,
+    )
 
-    # Plot results
     simulator.plot()
-
-def run_botnet_simulation(G, steps=20, infection_prob=0.25, recovery_prob=0.02, num_seeds=3):
-        """Wrapper for BotnetSimulator to return infection curve for experiments. """
-        simulator = BotnetSimulator(G, infection_prob=infection_prob, recovery_prob=recovery_prob)
-        simulator.initialize_infection(num_seeds=num_seeds)
-        simulator.run(
-            steps=steps,
-            verbose=False
-        )
-        return simulator.infection_history
