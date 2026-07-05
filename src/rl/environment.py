@@ -14,15 +14,17 @@ class GraphPruningEnv:
     """
 
     def __init__(
-            self,
-            max_steps=20,
-            infection_prob=0.25,
-            recovery_prob=0.02,
-        ):
+        self,
+        max_steps=20,
+        infection_prob=0.25,
+        recovery_prob=0.02,
+        num_seeds=3,
+    ):
 
         self.max_steps = max_steps
         self.infection_prob = infection_prob
         self.recovery_prob = recovery_prob
+        self.num_seeds = num_seeds
 
         # Load frozen dataset
         self.data = load_social_iot_dataset()
@@ -200,6 +202,7 @@ class GraphPruningEnv:
             self.graph,
             infection_prob=self.infection_prob,
             recovery_prob=self.recovery_prob,
+            num_seeds=self.num_seeds,
         )
 
         self.infection_history = infection_history

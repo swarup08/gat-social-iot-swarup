@@ -1,0 +1,4 @@
+Method,Infection,Connectivity,Removed_Edges,Reward
+No Pruning,0.975,1.0,0,
+Threshold,0.9,0.7983870967741935,25,
+Dynamic RL,0.885,0.9153225806451613,20,6.303225806451612
