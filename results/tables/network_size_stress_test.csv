@@ -1,0 +1,4 @@
+Nodes,Edges,Final_Infection,Infection_Ratio
+40,124,38,0.95
+80,534,77,0.9625
+120,1177,116,0.9666666666666667

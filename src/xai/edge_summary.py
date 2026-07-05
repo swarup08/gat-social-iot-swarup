@@ -38,6 +38,14 @@ def summarize_pruned_edges(log_file="results/logs/pruning_log.csv"):
 
     print(summary)
 
+    summary.to_csv(
+        "results/tables/edge_summary.csv",
+        index=False,
+    )
+
+    print("\nSaved to:")
+    print("results/tables/edge_summary.csv")
+
     return summary
 
 

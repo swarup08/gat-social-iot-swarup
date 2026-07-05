@@ -1,0 +1,4 @@
+Noise_Level,Best_Validation_Accuracy,Test_Accuracy
+0.0,0.75,0.75
+0.05,1.0,0.75
+0.1,0.625,0.875

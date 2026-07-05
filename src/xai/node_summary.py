@@ -39,6 +39,14 @@ def summarize_nodes(
 
     print(summary)
 
+    summary.to_csv(
+        "results/tables/node_summary.csv",
+        index=False,
+    )
+
+    print("\nSaved to:")
+    print("results/tables/node_summary.csv")
+
     return summary
 
 

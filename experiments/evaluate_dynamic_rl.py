@@ -17,6 +17,7 @@ def evaluate_dynamic_rl(
         verbose=True,
         num_seeds=3,
         infection_prob=0.25,
+        return_history=False,
 ):
     # -----------------------------
     # Create Environment
@@ -148,12 +149,17 @@ def evaluate_dynamic_rl(
     env.graph.number_of_edges()
 )
 
-    return {
+    result = {
         "method": "Dynamic RL",
         "infection": sum(infection_history) / len(infection_history),
         "connectivity": sum(connectivity_history) / len(connectivity_history),
         "removed_edges": removed_edges,
         "total_reward": total_reward,
     }
+
+    if return_history:
+        return infection_history, connectivity_history
+
+    return result
 if __name__ == "__main__":
     evaluate_dynamic_rl()

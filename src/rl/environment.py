@@ -19,12 +19,19 @@ class GraphPruningEnv:
         infection_prob=0.25,
         recovery_prob=0.02,
         num_seeds=3,
+        alpha=0.5,
+        beta=0.3,
+        gamma=0.2,
     ):
 
         self.max_steps = max_steps
         self.infection_prob = infection_prob
         self.recovery_prob = recovery_prob
         self.num_seeds = num_seeds
+
+        self.alpha = alpha
+        self.beta = beta
+        self.gamma = gamma
 
         # Load frozen dataset
         self.data = load_social_iot_dataset()
@@ -237,9 +244,12 @@ class GraphPruningEnv:
         # Compute Reward
         # -------------------------
         reward = compute_reward(
-            infection_ratio,
-            connectivity_ratio,
-            pruning_cost
+            infection_ratio=infection_ratio,
+            connectivity_ratio=connectivity_ratio,
+            pruning_cost=pruning_cost,
+            alpha=self.alpha,
+            beta=self.beta,
+            gamma=self.gamma,
         )
 
         # -------------------------

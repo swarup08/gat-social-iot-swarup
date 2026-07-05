@@ -1,0 +1,4 @@
+Density,Nodes,Edges,Final_Infection,Infection_Ratio
+0.05,40,67,3,0.075
+0.08,40,124,38,0.95
+0.12,40,189,39,0.975

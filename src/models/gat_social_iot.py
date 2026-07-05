@@ -67,12 +67,19 @@ def evaluate(model, data, mask):
 # ---------------------------
 # Main
 # ---------------------------
-def main():
+
+def main(
+        heads=8,
+        hidden_channels=16,
+        save_model_path="results/models/best_gat_social_iot.pth",
+        data=None,
+):
     os.makedirs("results/models", exist_ok=True)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     #clsdata = convert_social_iot_to_pyg()
-    data = load_social_iot_dataset()
+    if data is None:
+        data = load_social_iot_dataset()
     data = data.to(device)
 
     # Create train/val/test masks
@@ -99,9 +106,9 @@ def main():
 
     model = GAT(
         in_channels=data.x.size(1),
-        hidden_channels=16, #8
-        out_channels=2,   # benign vs vulnerable
-        heads=8, #4
+        hidden_channels=hidden_channels,
+        out_channels=2,
+        heads=heads,
         dropout=0.5
     ).to(device)
 
@@ -128,9 +135,8 @@ def main():
 
             torch.save(
                 model.state_dict(),
-                "results/models/best_gat_social_iot.pth"
+                save_model_path
             )
-
         if epoch % 10 == 0:
             print(f"Epoch {epoch:03d} | Loss: {loss:.4f} | "
                   f"Train Acc: {train_acc:.3f} | Val Acc: {val_acc:.3f} | Test Acc: {test_acc:.3f}")
@@ -146,7 +152,8 @@ def main():
     print(f"Test Accuracy        : {best_test_acc:.3f}")
 
     print("\nBest model saved at:")
-    print("results/models/best_gat_social_iot.pth")
+    print(save_model_path)
+    return best_val_acc, best_test_acc
 
 if __name__ == "__main__":
     main()
