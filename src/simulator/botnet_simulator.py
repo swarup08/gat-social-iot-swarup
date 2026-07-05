@@ -43,11 +43,30 @@ class BotnetSimulator:
 
         self.state = new_state
 
-    def run(self, steps=20):
+    def run(self, steps=20, verbose=False):
+        """
+        Run botnet propagation simulation.
+
+        Parameters
+        ----------
+        steps : int
+            Number of simulation steps.
+
+        verbose : bool
+            Print infection statistics if True.
+        """
+
+        self.infection_history = []
+
         for t in range(steps):
+
             infected_count = sum(self.state.values())
+
             self.infection_history.append(infected_count)
-            print(f"Time {t}: Infected nodes = {infected_count}")
+
+            if verbose:
+                print(f"Time {t}: Infected nodes = {infected_count}")
+
             self.step()
 
     def plot(self):
@@ -87,5 +106,8 @@ def run_botnet_simulation(G, steps=20, infection_prob=0.25, recovery_prob=0.02, 
         """Wrapper for BotnetSimulator to return infection curve for experiments. """
         simulator = BotnetSimulator(G, infection_prob=infection_prob, recovery_prob=recovery_prob)
         simulator.initialize_infection(num_seeds=num_seeds)
-        simulator.run(steps=steps)
+        simulator.run(
+            steps=steps,
+            verbose=False
+        )
         return simulator.infection_history
