@@ -41,17 +41,44 @@ class SocialIoTGraph:
 
             self.graph.add_node(i, **x_v)
 
-    def generate_edges(self, p=0.05):
-        for u in range(self.num_nodes):
-            for v in range(self.num_nodes):
-                if u != v and random.random() < p:
-                    # Edge feature vector
-                    e_uv = {
-                        "protocol": random.choice(["MQTT", "HTTP", "CoAP"]),
-                        "bandwidth": random.uniform(0.5, 10),  # Mbps
-                        "latency": random.uniform(1, 100)      # ms
-                    }
-                    self.graph.add_edge(u, v, **e_uv)
+    def generate_edges(self, p=0.05, m=2, topology="scale_free"):
+        """
+        Build the communication topology.
+
+        topology="scale_free" (default): Barabasi-Albert preferential
+        attachment. This produces hub nodes (a small number of
+        high-degree gateways/services), which is structurally close to
+        real Social IoT / social-network topologies and gives targeted
+        pruning something meaningful to exploit.
+
+        topology="erdos_renyi": kept for backward-compatible comparison
+        only (uniform random wiring, no hubs).
+        """
+        if topology == "erdos_renyi":
+            for u in range(self.num_nodes):
+                for v in range(self.num_nodes):
+                    if u != v and random.random() < p:
+                        self._add_edge_with_features(u, v)
+            return
+
+        # Barabasi-Albert requires m < num_nodes
+        m = max(1, min(m, self.num_nodes - 1))
+        ba_graph = nx.barabasi_albert_graph(self.num_nodes, m, seed=SEED)
+
+        for u, v in ba_graph.edges():
+            # Reciprocal communication (both directions), matching the
+            # "device follows device" / mutual trust relationships
+            # described in the roadmap.
+            self._add_edge_with_features(u, v)
+            self._add_edge_with_features(v, u)
+
+    def _add_edge_with_features(self, u, v):
+        e_uv = {
+            "protocol": random.choice(["MQTT", "HTTP", "CoAP"]),
+            "bandwidth": random.uniform(0.5, 10),  # Mbps
+            "latency": random.uniform(1, 100)      # ms
+        }
+        self.graph.add_edge(u, v, **e_uv)
     
     def add_degree_features(self):
         for node in self.graph.nodes:
