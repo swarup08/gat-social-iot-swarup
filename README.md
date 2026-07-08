@@ -427,7 +427,7 @@ python -m experiments.evaluate_dynamic_rl
 
 ## Step 6
 
-Compare All Methods
+Compare All Methods (single-graph sanity check)
 
 ```bash
 python -m experiments.compare_methods
@@ -438,6 +438,57 @@ Output
 ```
 results/tables/comparison_results.csv
 ```
+
+This runs every method once on a single generated graph. It is a fast
+smoke test for checking the pipeline end-to-end, **not** the reported
+result — a single graph's outcome is not statistically meaningful. See
+Step 6a/6b below for the authoritative multi-graph comparison.
+
+---
+
+## Step 6a
+
+Multi-Graph Evaluation
+
+Repeats the full method comparison across many independently generated
+graph instances and reports mean +/- std per method, so results aren't
+driven by one lucky/unlucky graph.
+
+```bash
+python -m experiments.multi_graph_evaluation
+```
+
+Output
+
+```
+results/tables/multi_graph_raw_results.csv
+results/tables/multi_graph_summary.csv
+```
+
+---
+
+## Step 6b
+
+Paired Comparison vs Random
+
+Graph-to-graph topology variance dominates the between-method
+differences in the pooled summary above, so this re-analyzes the same
+raw results as a per-graph paired comparison against Random pruning
+(paired t-test, Wilcoxon signed-rank, Shapiro-Wilk normality check).
+
+```bash
+python -m experiments.paired_comparison
+```
+
+Output
+
+```
+results/tables/paired_comparison_vs_random.csv
+```
+
+**`multi_graph_summary.csv` and `paired_comparison_vs_random.csv` are
+the authoritative comparison results** (n=40 graphs); treat
+`comparison_results.csv` as an illustrative single-run example only.
 
 ---
 
@@ -593,7 +644,9 @@ The framework evaluates each pruning strategy using the following metrics.
 Experimental results are automatically exported to:
 
 ```
-results/tables/comparison_results.csv
+results/tables/multi_graph_summary.csv           (authoritative: mean +/- std over 40 graphs)
+results/tables/paired_comparison_vs_random.csv   (authoritative: paired significance tests vs Random)
+results/tables/comparison_results.csv            (single-graph sanity check only)
 ```
 
 ---
@@ -830,7 +883,10 @@ results/
 │   └── Intermediate visualization outputs
 │
 └── tables/
-    ├── comparison_results.csv
+    ├── comparison_results.csv            (single-graph sanity check)
+    ├── multi_graph_raw_results.csv       (authoritative: per-graph raw results, n=40)
+    ├── multi_graph_summary.csv           (authoritative: mean +/- std, n=40)
+    ├── paired_comparison_vs_random.csv   (authoritative: paired significance tests)
     ├── gat_heads_ablation.csv
     ├── reward_weight_ablation.csv
     ├── noisy_feature_ablation.csv
