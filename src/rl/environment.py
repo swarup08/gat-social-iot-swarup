@@ -22,6 +22,8 @@ class GraphPruningEnv:
         alpha=0.5,
         beta=0.3,
         gamma=0.2,
+        data=None,
+        gat_model_path=None,
     ):
 
         self.max_steps = max_steps
@@ -33,8 +35,14 @@ class GraphPruningEnv:
         self.beta = beta
         self.gamma = gamma
 
-        # Load frozen dataset
-        self.data = load_social_iot_dataset()
+        # `data`/`gat_model_path` default to the frozen canonical
+        # dataset/GAT checkpoint; pass both to run the RL env on a
+        # freshly generated graph with a freshly trained GAT (e.g.
+        # multi-graph evaluation).
+        if data is None:
+            data = load_social_iot_dataset()
+
+        self.data = data
 
         # Convert to NetworkX graph
         self.original_graph = pyg_to_networkx(self.data)
@@ -43,7 +51,10 @@ class GraphPruningEnv:
         self.graph = copy.deepcopy(self.original_graph)
 
         # Load attention-based edge importance
-        self.edge_index, self.edge_scores = compute_edge_importance()
+        self.edge_index, self.edge_scores = compute_edge_importance(
+            data=self.data,
+            model_path=gat_model_path,
+        )
 
         # Episode variables
         self.current_step = 0

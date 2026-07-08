@@ -18,6 +18,8 @@ def evaluate_dynamic_rl(
         num_seeds=3,
         infection_prob=0.25,
         return_history=False,
+        max_steps=20,
+        model_path=None,
 ):
     # -----------------------------
     # Create Environment
@@ -27,6 +29,7 @@ def evaluate_dynamic_rl(
     env = GraphPruningEnv(
         num_seeds=num_seeds,
         infection_prob=infection_prob,
+        max_steps=max_steps,
     )
     state = env.reset()
 
@@ -44,7 +47,7 @@ def evaluate_dynamic_rl(
     # -----------------------------
     # Load Trained Model
     # -----------------------------
-    agent.load_model(MODEL_PATH)
+    agent.load_model(model_path or MODEL_PATH)
     logger = PruningLogger()
 
     #print("Valid Actions:", len(env.get_valid_actions()))

@@ -89,23 +89,37 @@ class DQNAgent:
         # Loss
         self.criterion = nn.MSELoss()
 
-    def select_action(self, state):
+    def select_action(self, state, valid_actions=None):
         """
-        Epsilon-Greedy Action Selection.
+        Epsilon-Greedy Action Selection, restricted to valid_actions
+        when given.
+
+        Without this restriction, once epsilon decays the greedy
+        argmax can collapse onto a single action index that stays
+        "best" across states (a real failure mode observed in
+        training: reward went strongly negative as epsilon -> 0.05,
+        because the agent kept re-selecting an edge it had already
+        removed on step 1, eating the -1.0 "already removed" penalty
+        for every remaining step of the episode). Masking to
+        get_valid_actions() during training mirrors what
+        predict_action() already does during evaluation.
         """
+
+        if valid_actions is None:
+            valid_actions = range(self.action_dim)
 
         # Exploration
         if random.random() < self.epsilon:
-            return random.randrange(self.action_dim)
+            return random.choice(list(valid_actions))
 
         # Exploitation
         state = torch.FloatTensor(state).unsqueeze(0).to(self.device)
 
         with torch.no_grad():
 
-            q_values = self.model(state)
+            q_values = self.model(state).cpu().numpy().flatten()
 
-        return int(torch.argmax(q_values).item())
+        return max(valid_actions, key=lambda action: q_values[action])
 
     def decay_epsilon(self):
 

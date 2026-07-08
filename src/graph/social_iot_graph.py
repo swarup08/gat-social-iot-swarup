@@ -18,9 +18,10 @@ class SocialIoTGraph:
     Edges = communication / trust / service relationships
     """
 
-    def __init__(self, num_nodes=50):
-        random.seed(SEED)
-        np.random.seed(SEED)
+    def __init__(self, num_nodes=50, seed=SEED):
+        self.seed = seed
+        random.seed(seed)
+        np.random.seed(seed)
         self.num_nodes = num_nodes
         self.graph = nx.DiGraph()
 
@@ -63,7 +64,7 @@ class SocialIoTGraph:
 
         # Barabasi-Albert requires m < num_nodes
         m = max(1, min(m, self.num_nodes - 1))
-        ba_graph = nx.barabasi_albert_graph(self.num_nodes, m, seed=SEED)
+        ba_graph = nx.barabasi_albert_graph(self.num_nodes, m, seed=self.seed)
 
         for u, v in ba_graph.edges():
             # Reciprocal communication (both directions), matching the

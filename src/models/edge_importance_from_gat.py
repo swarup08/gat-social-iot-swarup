@@ -27,9 +27,19 @@ class GATWithAttention(torch.nn.Module):
         return x
 
 
-def compute_edge_importance():
+def compute_edge_importance(data=None, model_path=None):
     """
     Compute attention-based edge importance scores.
+
+    Parameters
+    ----------
+    data : torch_geometric.data.Data, optional
+        Graph to score. Defaults to the frozen canonical dataset.
+    model_path : str, optional
+        Trained GAT checkpoint to load. Defaults to the canonical
+        checkpoint. Both params exist so callers (e.g. a multi-graph
+        evaluation loop) can score a freshly generated graph against
+        a freshly trained model without touching the canonical files.
 
     Returns
     -------
@@ -39,9 +49,14 @@ def compute_edge_importance():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    from src.utils.data_loader import load_social_iot_dataset
+    if data is None:
+        from src.utils.data_loader import load_social_iot_dataset
+        data = load_social_iot_dataset()
 
-    data = load_social_iot_dataset().to(device)
+    data = data.to(device)
+
+    if model_path is None:
+        model_path = "results/models/best_gat_social_iot.pth"
 
     model = GATWithAttention(
         in_channels=data.x.size(1),
@@ -53,7 +68,7 @@ def compute_edge_importance():
 
     model.load_state_dict(
         torch.load(
-            "results/models/best_gat_social_iot.pth",
+            model_path,
             map_location=device,
             weights_only=False
         )

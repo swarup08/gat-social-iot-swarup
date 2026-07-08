@@ -29,8 +29,12 @@ def generate_node_labels(G):
 
     return labels
 
-def convert_social_iot_to_pyg(num_nodes=40, edge_prob=0.08):
-    graph_gen = SocialIoTGraph(num_nodes=num_nodes)
+def convert_social_iot_to_pyg(num_nodes=40, edge_prob=0.08, seed=SEED):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+
+    graph_gen = SocialIoTGraph(num_nodes=num_nodes, seed=seed)
     graph_gen.generate_nodes()
     graph_gen.generate_edges(p=edge_prob)
     graph_gen.add_degree_features()

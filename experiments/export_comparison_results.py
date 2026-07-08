@@ -12,8 +12,13 @@ import os
 import pandas as pd
 
 from experiments.compare_methods import (
+    BUDGET,
     evaluate_no_pruning,
     evaluate_static_pruning,
+    evaluate_topk_pruning,
+    evaluate_random_pruning,
+    evaluate_degree_pruning,
+    evaluate_betweenness_pruning,
 )
 
 from experiments.evaluate_dynamic_rl import (
@@ -29,10 +34,17 @@ def export_results():
 
     no_pruning = evaluate_no_pruning()
 
-    static_pruning = evaluate_static_pruning()
+    static_pruning = evaluate_static_pruning(BUDGET)
+
+    topk_pruning = evaluate_topk_pruning(BUDGET)
+
+    random_pruning = evaluate_random_pruning(BUDGET)
+    degree_pruning = evaluate_degree_pruning(BUDGET)
+    betweenness_pruning = evaluate_betweenness_pruning(BUDGET)
 
     dynamic_rl = evaluate_dynamic_rl(
-        verbose=False
+        verbose=False,
+        max_steps=BUDGET,
     )
 
     results = [
@@ -50,6 +62,38 @@ def export_results():
             "Infection": static_pruning["infection"],
             "Connectivity": static_pruning["connectivity"],
             "Removed_Edges": static_pruning["removed_edges"],
+            "Reward": None,
+        },
+
+        {
+            "Method": topk_pruning["method"],
+            "Infection": topk_pruning["infection"],
+            "Connectivity": topk_pruning["connectivity"],
+            "Removed_Edges": topk_pruning["removed_edges"],
+            "Reward": None,
+        },
+
+        {
+            "Method": random_pruning["method"],
+            "Infection": random_pruning["infection"],
+            "Connectivity": random_pruning["connectivity"],
+            "Removed_Edges": random_pruning["removed_edges"],
+            "Reward": None,
+        },
+
+        {
+            "Method": degree_pruning["method"],
+            "Infection": degree_pruning["infection"],
+            "Connectivity": degree_pruning["connectivity"],
+            "Removed_Edges": degree_pruning["removed_edges"],
+            "Reward": None,
+        },
+
+        {
+            "Method": betweenness_pruning["method"],
+            "Infection": betweenness_pruning["infection"],
+            "Connectivity": betweenness_pruning["connectivity"],
+            "Removed_Edges": betweenness_pruning["removed_edges"],
             "Reward": None,
         },
 
